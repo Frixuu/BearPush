@@ -11,6 +11,8 @@ jobs:
       uses: actions/setup-go@v2
       with:
         go-version: '^1.16.5'
+    - name: Fix missing entries
+      run: 'go get -t .'
     - name: Build application
       run: 'go build -tags=nomsgpack -ldflags="-s -w" -o bearpush .'
     - name: Upload executable
