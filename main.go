@@ -21,38 +21,44 @@ func main() {
 		})
 	})
 
-	router.POST("/v1/upload", func(c *gin.Context) {
+	v1 := router.Group("/v1")
+	{
+		v1.POST("/upload/:product", ValidateToken(), func(c *gin.Context) {
 
-		file, err := c.FormFile("artifact")
-		if err != nil {
-			log.Println(err)
-			c.String(http.StatusBadRequest, fmt.Sprintf("Error while uploading: %s", err))
-			return
-		}
+			product := c.Param("product")
 
-		tempDir, err := ioutil.TempDir("", "bearpush-")
-		if err != nil {
-			log.Println(err)
-			c.String(http.StatusInternalServerError,
-				"Could not create a temporary directory for artifact. Check logs for details.")
-			return
-		}
+			file, err := c.FormFile("artifact")
+			if err != nil {
+				log.Println(err)
+				c.String(http.StatusBadRequest, fmt.Sprintf("Error while uploading: %s", err))
+				return
+			}
 
-		err = c.SaveUploadedFile(file, path.Join(tempDir, "artifact"))
-		if err != nil {
-			log.Printf("Cannot save artifact: %s", err)
-			c.String(http.StatusInternalServerError,
-				"Could not save the uploaded artifact. Check logs for details.")
-			return
-		}
+			tempDir, err := ioutil.TempDir("", "bearpush-")
+			if err != nil {
+				log.Println(err)
+				c.String(http.StatusInternalServerError,
+					"Could not create a temporary directory for artifact. Check logs for details.")
+				return
+			}
 
-		err = os.RemoveAll(tempDir)
-		if err != nil {
-			log.Printf("Cannot remove temporary directory %s: %s", tempDir, err)
-		}
+			err = c.SaveUploadedFile(file, path.Join(tempDir, "artifact"))
+			if err != nil {
+				log.Printf("Cannot save artifact: %s", err)
+				c.String(http.StatusInternalServerError,
+					"Could not save the uploaded artifact. Check logs for details.")
+				return
+			}
 
-		c.String(http.StatusOK, "test")
-	})
+			err = os.RemoveAll(tempDir)
+			if err != nil {
+				log.Printf("Cannot remove temporary directory %s: %s", tempDir, err)
+			}
+
+			c.String(http.StatusOK,
+				fmt.Sprintf("Artifact for product %s processed successfully.", product))
+		})
+	}
 
 	router.Run()
 }
