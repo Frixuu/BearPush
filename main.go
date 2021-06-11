@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -8,10 +9,20 @@ import (
 	"os"
 	"path"
 
+	"github.com/Frixuu/BearPush/v2/config"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
+
+	cfgDir := flag.String("config-dir", config.DefaultConfigDir,
+		"Path to a directory containing this application's configuration files.")
+
+	flag.Parse()
+
+	config := config.Load(*cfgDir)
+	log.Printf("Config directory: %s", config.Path)
+
 	router := gin.Default()
 	router.MaxMultipartMemory = 8 << 20 // 8 MiB
 
