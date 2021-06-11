@@ -1,0 +1,4 @@
+token:
+  strategy: 'static'
+  static-value: '${{TOKEN}}'
+  script: ''
