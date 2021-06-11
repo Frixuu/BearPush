@@ -16,7 +16,7 @@ type Config struct {
 
 // Loads the app configuration.
 // If the config files do not exist on disk, they will be created.
-func Load(dir string) *Config {
+func Load(dir string) (*Config, error) {
 	dirInfo, err := os.Stat(dir)
 	if os.IsNotExist(err) {
 		if err = os.MkdirAll(dir, 0740); err != nil {
@@ -30,5 +30,5 @@ func Load(dir string) *Config {
 
 	return &Config{
 		Path: dir,
-	}
+	}, nil
 }
