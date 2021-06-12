@@ -1,4 +1,4 @@
-package main
+package product
 
 import (
 	"errors"
@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/Frixuu/BearPush/v2/config"
 	"github.com/facebookgo/symwalk"
 	"gopkg.in/yaml.v2"
 )
@@ -68,12 +67,19 @@ type TokenSettings struct {
 	Script   *string       `yaml:"script"`
 }
 
+// VerifyToken checks whether a token can be considered valid,
+// according to current strategy.
 func (p *Product) VerifyToken(token string) bool {
-	return true
+	switch p.TokenSettings.Strategy {
+	case Static:
+		return *p.TokenSettings.Value == token
+	}
+
+	panic(fmt.Sprintf("Token strategy %v is not implemented", p.TokenSettings.Strategy))
 }
 
 // Loads product manifest from a file under a provided path.
-func LoadProductFromFile(path string) (*Product, error) {
+func LoadFromFile(path string) (*Product, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
@@ -88,10 +94,10 @@ func LoadProductFromFile(path string) (*Product, error) {
 	return &p, nil
 }
 
-// Parses all available product manifests.
-func LoadAllProducts(c *config.Config) (map[string]*Product, error) {
+// LoadAll parses all available product manifests.
+func LoadAll(basePath string) (map[string]*Product, error) {
 	m := make(map[string]*Product)
-	dir := filepath.Join(c.Path, "products")
+	dir := filepath.Join(basePath, "products")
 	err := symwalk.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if info.IsDir() {
 			return nil
@@ -104,7 +110,7 @@ func LoadAllProducts(c *config.Config) (map[string]*Product, error) {
 		}
 
 		base := name[:len(name)-4]
-		p, err := LoadProductFromFile(path)
+		p, err := LoadFromFile(path)
 		if err != nil {
 			log.Printf("Cannot load product %s: %s\n", base, err)
 			return nil

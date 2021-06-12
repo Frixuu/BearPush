@@ -92,13 +92,13 @@ func main() {
 			}
 
 			log.Printf("Config directory: %s", config.Path)
-			products, err := LoadAllProducts(config)
+			appContext, err := ContextFromConfig(config)
 			if err != nil {
-				log.Printf("Cannot load product data: %s\n", err)
+				log.Printf("Cannot create app context: %s\n", err)
 				return err
 			}
 
-			for name, p := range products {
+			for name, p := range appContext.Products {
 				log.Printf("Loaded product %s, token strategy %v", name, p.TokenSettings.Strategy)
 			}
 
@@ -113,7 +113,7 @@ func main() {
 
 			v1 := router.Group("/v1")
 			{
-				v1.POST("/upload/:product", ValidateToken(), func(c *gin.Context) {
+				v1.POST("/upload/:product", ValidateToken(appContext), func(c *gin.Context) {
 
 					product := c.Param("product")
 
