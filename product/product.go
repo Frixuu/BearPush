@@ -12,11 +12,13 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+// Product describes a type of entity Bearpush can process.
 type Product struct {
 	Script        string        `yaml:"process-script"`
 	TokenSettings TokenSettings `yaml:"token"`
 }
 
+// TokenStrategy determines how the user tokens get validated.
 type TokenStrategy int
 
 const (
@@ -62,6 +64,7 @@ func (s *TokenStrategy) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return errors.New(fmt.Sprintf("\"%s\" is not a valid token strategy", j))
 }
 
+// TokenSettings describes how a Product validates incoming auth tokens.
 type TokenSettings struct {
 	Strategy TokenStrategy `yaml:"strategy"`
 	Value    *string       `yaml:"static-value"`

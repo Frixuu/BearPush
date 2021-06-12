@@ -7,7 +7,7 @@ import (
 )
 
 // Default configuration directory of this application.
-// Can be overriden by the user.
+// Can be overridden by the user.
 var DefaultConfigDir = filepath.Join(defaultUserConfigRoot, "bearpush")
 
 type Config struct {
@@ -29,7 +29,7 @@ func Load(dir string) (Config, error) {
 	} else if !dirInfo.IsDir() {
 		log.Fatalf("An entry for %s exists, but it is not a directory. Aborting", dir)
 	} else if err != nil {
-		log.Fatalf("An error occured while retrieving info for dir %s: %s", dir, err)
+		log.Fatalf("An error occurred while retrieving info for dir %s: %s", dir, err)
 	}
 
 	c := Config{

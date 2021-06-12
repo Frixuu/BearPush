@@ -1,7 +1,7 @@
 package templates
 
 import (
-	_ "embed"
+	_ "embed" // For embedding template files
 	"log"
 
 	"github.com/Frixuu/BearPush/v2/util"

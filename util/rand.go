@@ -6,8 +6,7 @@ import (
 	mrand "math/rand"
 )
 
-// Generates a new string of n random chars.
-// The user should not assume what characters can or cannot appear in the token.
+// GenerateRandomToken returns a new string of n random chars.
 func GenerateRandomToken(n int) (string, error) {
 	const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	max := big.NewInt(int64(len(chars)))

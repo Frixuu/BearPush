@@ -7,6 +7,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// ValidateToken serves as a Gin middleware for checking
+// whether a user can trigger an artifact process.
 func ValidateToken(appCtx *Context) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.Request.Header["Authorization"]
