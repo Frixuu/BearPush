@@ -19,9 +19,10 @@ go build .
 
 To use Bearpush, you need to configure at least one **product** - a type of entity Bearpush can process. You can scaffold the configuration with ```bearpush product new [product name]```.
 
-The newly created configuration file will include a randomly generated static token. Feel free to change it. However, the config will not have any script attached yet. You can create one now.
+The newly created configuration file will include a randomly generated token ```static-value```. Feel free to change it. This token has to be provided in your request in order for it to be processed.  
 
-Update your config file to include line ```script: '/home/foo/bar.sh'```. The simplest shell script could look like this:
+To do something with the uploaded file, you have to create a ```process-script```. By default nothing is associated with your product.
+The simplest shell script could look like this:
 
 ```sh
 #!/bin/bash
@@ -30,7 +31,8 @@ mkdir -p /app/foo
 cp "${ARTIFACT_PATH}" /app/foo/my-file.txt
 ```
 
-Note that Bearpush provides you with the ARTIFACT_PATH environment variable.
+Note that Bearpush provides you with the ```ARTIFACT_PATH``` environment variable.
+Update your config file to include the **absolute** path to the script: ```process-script: '/home/foo/bar.sh'```.  
 
 Run ```bearpush``` to start the server.
 
