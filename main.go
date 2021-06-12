@@ -2,15 +2,18 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
 
 	"github.com/Frixuu/BearPush/v2/config"
 	"github.com/Frixuu/BearPush/v2/config/templates"
+	"github.com/Frixuu/BearPush/v2/util"
 	"github.com/gin-gonic/gin"
 	"github.com/urfave/cli/v2"
 )
@@ -116,6 +119,14 @@ func main() {
 				v1.POST("/upload/:product", ValidateToken(appContext), func(c *gin.Context) {
 
 					product := c.Param("product")
+					p, ok := appContext.Products[product]
+					if !ok {
+						c.JSON(http.StatusBadRequest, gin.H{
+							"error":   4,
+							"message": "Resource does not exist.",
+						})
+						return
+					}
 
 					file, err := c.FormFile("artifact")
 					if err != nil {
@@ -131,8 +142,10 @@ func main() {
 							"Could not create a temporary directory for artifact. Check logs for details.")
 						return
 					}
+					defer util.TryRemoveDir(tempDir)
 
-					err = c.SaveUploadedFile(file, path.Join(tempDir, "artifact"))
+					artifactPath := path.Join(tempDir, "artifact")
+					err = c.SaveUploadedFile(file, artifactPath)
 					if err != nil {
 						log.Printf("Cannot save artifact: %s", err)
 						c.String(http.StatusInternalServerError,
@@ -140,9 +153,44 @@ func main() {
 						return
 					}
 
-					err = os.RemoveAll(tempDir)
-					if err != nil {
-						log.Printf("Cannot remove temporary directory %s: %s", tempDir, err)
+					if p.Script != "" {
+						cmd := exec.Command(p.Script)
+						cmd.Env = append(os.Environ(),
+							fmt.Sprintf("ARTIFACT_PATH=%s", artifactPath),
+						)
+
+						stdoutPipe, err := cmd.StdoutPipe()
+						if err != nil {
+							log.Println(err)
+						}
+
+						stderrPipe, err := cmd.StderrPipe()
+						if err != nil {
+							log.Println(err)
+						}
+
+						if err := cmd.Start(); err != nil {
+							log.Println(err)
+						}
+
+						_, err = io.ReadAll(stdoutPipe)
+						if err != nil {
+							log.Println(err)
+						}
+
+						_, err = io.ReadAll(stderrPipe)
+						if err != nil {
+							log.Println(err)
+						}
+
+						if err := cmd.Wait(); err != nil {
+							log.Println(err)
+							c.JSON(http.StatusUnprocessableEntity, gin.H{
+								"error":   8,
+								"message": "Pipeline associated with resource errored.",
+							})
+							return
+						}
 					}
 
 					c.String(http.StatusOK,

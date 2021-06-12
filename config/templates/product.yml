@@ -1,4 +1,5 @@
+process-script: '' # Required
 token:
   strategy: 'static'
-  static-value: '${TOKEN}'
-  script: ''
+  static-value: '${TOKEN}' # Required for 'static' strategy
+  token-script: '' # Required for 'retrieve' and 'verify' strategies

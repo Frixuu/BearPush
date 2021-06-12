@@ -13,6 +13,7 @@ import (
 )
 
 type Product struct {
+	Script        string        `yaml:"process-script"`
 	TokenSettings TokenSettings `yaml:"token"`
 }
 
@@ -64,7 +65,7 @@ func (s *TokenStrategy) UnmarshalYAML(unmarshal func(interface{}) error) error {
 type TokenSettings struct {
 	Strategy TokenStrategy `yaml:"strategy"`
 	Value    *string       `yaml:"static-value"`
-	Script   *string       `yaml:"script"`
+	Script   *string       `yaml:"token-script"`
 }
 
 // VerifyToken checks whether a token can be considered valid,

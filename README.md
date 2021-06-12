@@ -21,6 +21,17 @@ To use Bearpush, you need to configure at least one **product** - a type of enti
 
 The newly created configuration file will include a randomly generated static token. Feel free to change it. However, the config will not have any script attached yet. You can create one now.
 
+Update your config file to include line ```script: '/home/foo/bar.sh'```. The simplest shell script could look like this:
+
+```sh
+#!/bin/bash
+
+mkdir -p /app/foo
+cp "${ARTIFACT_PATH}" /app/foo/my-file.txt
+```
+
+Note that Bearpush provides you with the ARTIFACT_PATH environment variable.
+
 Run ```bearpush``` to start the server.
 
 The simplest way to upload your artifact is to use curl:
