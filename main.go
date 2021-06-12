@@ -161,30 +161,30 @@ func main() {
 
 						stdoutPipe, err := cmd.StdoutPipe()
 						if err != nil {
-							log.Println(err)
+							log.Printf("Cannot grab stdout pipe: %s\n", err)
 						}
 
 						stderrPipe, err := cmd.StderrPipe()
 						if err != nil {
-							log.Println(err)
+							log.Printf("Cannot grab stderr pipe: %s\n", err)
 						}
 
 						if err := cmd.Start(); err != nil {
-							log.Println(err)
+							log.Printf("Cannot start: %s\n", err)
 						}
 
 						_, err = io.ReadAll(stdoutPipe)
 						if err != nil {
-							log.Println(err)
+							log.Printf("Cannot read stdout: %s\n", err)
 						}
 
 						_, err = io.ReadAll(stderrPipe)
 						if err != nil {
-							log.Println(err)
+							log.Printf("Cannot read stderr: %s\n", err)
 						}
 
 						if err := cmd.Wait(); err != nil {
-							log.Println(err)
+							log.Printf("Command failed: %s\n", err)
 							c.JSON(http.StatusUnprocessableEntity, gin.H{
 								"error":   8,
 								"message": "Pipeline associated with resource errored.",
