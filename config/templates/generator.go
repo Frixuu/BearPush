@@ -12,7 +12,8 @@ var templateProduct string
 
 // Generates contents of a file describing a new product.
 func GenerateProductFile(name string) string {
-	token, err := util.GenerateRandomToken(32)
+	tokenLength := util.RandInt(28, 35)
+	token, err := util.GenerateRandomToken(tokenLength)
 	if err != nil {
 		log.Fatalf("Error while generating random token: %s", err)
 	}

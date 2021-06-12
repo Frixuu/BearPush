@@ -58,8 +58,7 @@ func main() {
 							productPath := filepath.Join(dir, productName+".yml")
 							_, err = os.Stat(productPath)
 							if err == nil || !os.IsNotExist(err) {
-								fmt.Printf("Cannot generate a product named %s since file %s exists\n",
-									productName, productPath)
+								fmt.Printf("A product named %s already exists.\n", productName)
 								return os.ErrExist
 							}
 
@@ -76,7 +75,8 @@ func main() {
 								return err
 							}
 
-							fmt.Printf("Configuration for new product %s created successfully.\n", productName)
+							fmt.Printf("Configuration for new product %s scaffolded successfully.\n", productName)
+							fmt.Printf("It has been saved in %s.\n", productPath)
 							return nil
 						},
 					},
@@ -92,6 +92,15 @@ func main() {
 			}
 
 			log.Printf("Config directory: %s", config.Path)
+			products, err := LoadAllProducts(config)
+			if err != nil {
+				log.Printf("Cannot load product data: %s\n", err)
+				return err
+			}
+
+			for name, p := range products {
+				log.Printf("Loaded product %s, token strategy %v", name, p.TokenSettings.Strategy)
+			}
 
 			router := gin.Default()
 			router.MaxMultipartMemory = 8 << 20 // 8 MiB

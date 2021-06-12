@@ -3,6 +3,7 @@ package util
 import (
 	"crypto/rand"
 	"math/big"
+	mrand "math/rand"
 )
 
 // Generates a new string of n random chars.
@@ -20,4 +21,10 @@ func GenerateRandomToken(n int) (string, error) {
 	}
 
 	return string(token), nil
+}
+
+// RandInt generates a pseudorandom int in range [min, max).
+func RandInt(min int, max int) int {
+	delta := max - min
+	return mrand.Intn(delta) + min
 }
