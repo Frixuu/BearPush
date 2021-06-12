@@ -1,6 +1,8 @@
 package config
 
-import "os"
+import (
+	"filepath"
+	"os"
+)
 
-var defaultGlobalConfigRoots = []string{"/Library/Application Support"}
-var defaultUserConfigRoot = os.Getenv("HOME") + "/Library/Application Support"
+var defaultUserConfigRoot = filepath.Join(os.Getenv("HOME"), "Library", "Application Support")

@@ -3,21 +3,13 @@ package config
 import (
 	"os"
 	"path/filepath"
-	"strings"
 )
 
-var defaultGlobalConfigRoots []string
-var defaultUserConfigRoot string
+var defaultUserConfigRoot = determineUserDirLinux()
 
-func init() {
-	if os.Getenv("XDG_CONFIG_HOME") != "" {
-		defaultUserConfigRoot = os.Getenv("XDG_CONFIG_HOME")
-	} else {
-		defaultUserConfigRoot = filepath.Join(os.Getenv("HOME"), ".config")
+func determineUserDirLinux() string {
+	if val, ok := os.LookupEnv("XDG_CONFIG_HOME"); ok {
+		return val
 	}
-	if os.Getenv("XDG_CONFIG_DIRS") != "" {
-		defaultGlobalConfigRoots = strings.Split(os.Getenv("XDG_CONFIG_DIRS"), ":")
-	} else {
-		defaultGlobalConfigRoots = []string{"/etc/xdg"}
-	}
+	return filepath.Join(os.Getenv("HOME"), ".config")
 }
