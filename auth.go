@@ -1,14 +1,13 @@
 package main
 
 import (
-	"log"
 	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 )
 
-func ValidateToken() gin.HandlerFunc {
+func ValidateToken(appCtx *Context) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.Request.Header["Authorization"]
 		if authHeader == nil || len(authHeader) != 1 {
@@ -21,17 +20,19 @@ func ValidateToken() gin.HandlerFunc {
 
 		token := strings.TrimPrefix(authHeader[0], "Bearer ")
 		product := c.Param("product")
-
-		valid := false
-
-		// Do work with token and product
-		log.Printf("Request for product '%s', token '%s'", product, token)
-		valid = true
-
-		if !valid {
+		p, ok := appCtx.Products[product]
+		if !ok {
 			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
 				"error":   2,
-				"message": "Invalid token.",
+				"message": "One or more requested resources is not available.",
+			})
+			return
+		}
+
+		if !p.VerifyToken(token) {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
+				"error":   3,
+				"message": "You are not allowed to access one or more requested resources.",
 			})
 			return
 		}
