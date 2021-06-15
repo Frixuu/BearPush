@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -10,10 +12,13 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"time"
 
 	"github.com/Frixuu/BearPush/config"
 	"github.com/Frixuu/BearPush/config/templates"
+	"github.com/Frixuu/BearPush/server"
 	"github.com/Frixuu/BearPush/util"
+	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"github.com/urfave/cli/v2"
 )
@@ -108,8 +113,16 @@ func main() {
 				logger.Infof("Loaded product %s, token strategy %v", name, p.TokenSettings.Strategy)
 			}
 
+			gin.SetMode(gin.ReleaseMode)
+			gin.DefaultWriter = io.Discard
+			gin.DefaultErrorWriter = io.Discard
 			router := gin.Default()
 			router.MaxMultipartMemory = 8 << 20 // 8 MiB
+
+			// Log all requests with Zap
+			router.Use(ginzap.Ginzap(logger.Desugar(), time.RFC3339, false))
+			// Log all panics with stacktraces
+			router.Use(ginzap.RecoveryWithZap(logger.Desugar(), true))
 
 			router.GET("/ping", func(c *gin.Context) {
 				c.JSON(200, gin.H{
@@ -201,7 +214,29 @@ func main() {
 				})
 			}
 
-			return router.Run()
+			server := &http.Server{
+				Addr:    server.DeterminePort(),
+				Handler: router,
+			}
+
+			// Listen in a goroutine
+			go func() {
+				err := server.ListenAndServe()
+				if err != nil && errors.Is(err, http.ErrServerClosed) {
+					logger.Info("Server closed")
+				}
+			}()
+
+			util.WaitForInterrupt()
+			logger.Info("Shutting down the server")
+			ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+			defer cancel()
+
+			if err := server.Shutdown(ctx); err != nil {
+				logger.Fatal("Server forced to shutdown: ", err)
+			}
+
+			return nil
 		},
 	}
 

@@ -9,9 +9,13 @@ import (
 type TokenStrategy int
 
 const (
+	// None is a noop strategy and should not be used.
 	None TokenStrategy = 1 << iota
+	// Static means there is a single token that will not change at runtime.
 	Static
+	// Retrieve means the possible tokens will be provided by a script.
 	Retrieve
+	// Verify means each token will get verified by a script.
 	Verify
 )
 
