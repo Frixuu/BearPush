@@ -4,7 +4,7 @@ import (
 	_ "embed" // For embedding template files
 	"log"
 
-	"github.com/Frixuu/BearPush/v2/util"
+	"github.com/Frixuu/BearPush/util"
 )
 
 //go:embed product.yml

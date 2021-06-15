@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/Frixuu/BearPush/v2/config"
-	"github.com/Frixuu/BearPush/v2/product"
+	"github.com/Frixuu/BearPush/config"
+	"github.com/Frixuu/BearPush/product"
 )
 
 // Context stores current application state.

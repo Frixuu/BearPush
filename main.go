@@ -11,14 +11,19 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/Frixuu/BearPush/v2/config"
-	"github.com/Frixuu/BearPush/v2/config/templates"
-	"github.com/Frixuu/BearPush/v2/util"
+	"github.com/Frixuu/BearPush/config"
+	"github.com/Frixuu/BearPush/config/templates"
+	"github.com/Frixuu/BearPush/util"
 	"github.com/gin-gonic/gin"
 	"github.com/urfave/cli/v2"
+	"go.uber.org/zap"
 )
 
 func main() {
+
+	z, _ := zap.NewProduction()
+	defer z.Sync()
+	logger := z.Sugar()
 
 	app := &cli.App{
 		EnableBashCompletion: true,
@@ -74,7 +79,7 @@ func main() {
 
 							_, err = file.WriteString(templates.GenerateProductFile(productName))
 							if err != nil {
-								fmt.Printf("Error occured while writing to file %s\n", productPath)
+								fmt.Printf("An error occurred while writing to file %s\n", productPath)
 								return err
 							}
 
@@ -90,19 +95,19 @@ func main() {
 
 			config, err := config.Load(c.String("config-dir"))
 			if err != nil {
-				log.Println("Cannot load config")
+				logger.Error("Cannot load config")
 				return err
 			}
 
-			log.Printf("Config directory: %s", config.Path)
+			logger.Infof("Config directory: %s", config.Path)
 			appContext, err := ContextFromConfig(config)
 			if err != nil {
-				log.Printf("Cannot create app context: %s\n", err)
+				logger.Errorf("Cannot create app context: %s\n", err)
 				return err
 			}
 
 			for name, p := range appContext.Products {
-				log.Printf("Loaded product %s, token strategy %v", name, p.TokenSettings.Strategy)
+				logger.Infof("Loaded product %s, token strategy %v", name, p.TokenSettings.Strategy)
 			}
 
 			router := gin.Default()
@@ -161,30 +166,30 @@ func main() {
 
 						stdoutPipe, err := cmd.StdoutPipe()
 						if err != nil {
-							log.Printf("Cannot grab stdout pipe: %s\n", err)
+							logger.Errorf("Cannot grab stdout pipe: %s\n", err)
 						}
 
 						stderrPipe, err := cmd.StderrPipe()
 						if err != nil {
-							log.Printf("Cannot grab stderr pipe: %s\n", err)
+							logger.Errorf("Cannot grab stderr pipe: %s\n", err)
 						}
 
 						if err := cmd.Start(); err != nil {
-							log.Printf("Cannot start: %s\n", err)
+							logger.Errorf("Cannot start: %s\n", err)
 						}
 
 						_, err = io.ReadAll(stdoutPipe)
 						if err != nil {
-							log.Printf("Cannot read stdout: %s\n", err)
+							logger.Errorf("Cannot read stdout: %s\n", err)
 						}
 
 						_, err = io.ReadAll(stderrPipe)
 						if err != nil {
-							log.Printf("Cannot read stderr: %s\n", err)
+							logger.Errorf("Cannot read stderr: %s\n", err)
 						}
 
 						if err := cmd.Wait(); err != nil {
-							log.Printf("Command failed: %s\n", err)
+							logger.Errorf("Command failed: %s\n", err)
 							c.JSON(http.StatusUnprocessableEntity, gin.H{
 								"error":   8,
 								"message": "Pipeline associated with resource errored.",
@@ -205,6 +210,6 @@ func main() {
 	app.Setup()
 	err := app.Run(os.Args)
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
 }
