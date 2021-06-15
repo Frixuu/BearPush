@@ -16,14 +16,12 @@ import (
 	"github.com/Frixuu/BearPush/util"
 	"github.com/gin-gonic/gin"
 	"github.com/urfave/cli/v2"
-	"go.uber.org/zap"
 )
 
 func main() {
 
-	z, _ := zap.NewProduction()
-	defer z.Sync()
-	logger := z.Sugar()
+	logger := CreateLogger()
+	defer logger.Sync()
 
 	app := &cli.App{
 		EnableBashCompletion: true,
