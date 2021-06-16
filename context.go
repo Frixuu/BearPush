@@ -1,8 +1,11 @@
 package bearpush
 
+import "go.uber.org/zap"
+
 // Context stores current application state.
 type Context struct {
 	Config   *Config
+	Logger   *zap.SugaredLogger
 	Products map[string]*Product
 }
 
@@ -15,6 +18,7 @@ func ContextFromConfig(c *Config) (*Context, error) {
 
 	return &Context{
 		Config:   c,
+		Logger:   zap.NewNop().Sugar(),
 		Products: p,
 	}, nil
 }

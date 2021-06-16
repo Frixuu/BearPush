@@ -4,11 +4,8 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
-	"os/exec"
-	"path"
 	"path/filepath"
 	"time"
 
@@ -102,15 +99,17 @@ func main() {
 				return err
 			}
 
-			logger.Info("Config directory: %s", config.Path)
-			appContext, err := bearpush.ContextFromConfig(config)
+			logger.Infof("Config directory: %s", config.Path)
+			app, err := bearpush.ContextFromConfig(config)
 			if err != nil {
 				logger.Errorf("Cannot create app context: %s\n", err)
 				return err
 			}
 
-			for name, p := range appContext.Products {
-				logger.Infof("Loaded product %s, token strategy %v", name, p.TokenSettings.Strategy)
+			app.Logger = logger
+			logger.Infof("Loaded info about %d products", len(app.Products))
+			for name, p := range app.Products {
+				logger.Infof("  - '%s', with '%v' strategy", name, p.TokenSettings.Strategy)
 			}
 
 			gin.SetMode(gin.ReleaseMode)
@@ -125,101 +124,14 @@ func main() {
 			// Log all panics with stacktraces
 			router.Use(ginzap.RecoveryWithZap(logger.Desugar(), true))
 
-			router.GET("/ping", func(c *gin.Context) {
-				c.JSON(200, gin.H{
-					"message": "pong",
-				})
-			})
-
 			v1 := router.Group("/v1")
 			{
-				v1.POST("/upload/:product", server.ValidateToken(appContext), func(c *gin.Context) {
-
-					product := c.Param("product")
-					p, ok := appContext.Products[product]
-					if !ok {
-						c.JSON(http.StatusBadRequest, gin.H{
-							"error":   4,
-							"message": "Resource does not exist.",
-						})
-						return
-					}
-
-					file, err := c.FormFile("artifact")
-					if err != nil {
-						logger.Warn(err)
-						c.JSON(http.StatusBadRequest, gin.H{
-							"error":   5,
-							"message": fmt.Sprintf("Error while uploading: %s", err),
-						})
-						return
-					}
-
-					tempDir, err := ioutil.TempDir("", "bearpush-")
-					if err != nil {
-						logger.Error(err)
-						c.JSON(http.StatusInternalServerError, gin.H{
-							"error":   6,
-							"message": "Could not create a temporary directory for artifact.",
-						})
-						return
-					}
-					defer util.TryRemoveDir(tempDir)
-
-					artifactPath := path.Join(tempDir, "artifact")
-					err = c.SaveUploadedFile(file, artifactPath)
-					if err != nil {
-						logger.Error("Cannot save artifact: %s", err)
-						c.JSON(http.StatusInternalServerError, gin.H{
-							"error":   7,
-							"message": "Could not save the uploaded artifact.",
-						})
-						return
-					}
-
-					if p.Script != "" {
-						cmd := exec.Command(p.Script)
-						cmd.Env = append(os.Environ(),
-							fmt.Sprintf("ARTIFACT_PATH=%s", artifactPath),
-						)
-
-						stdoutPipe, err := cmd.StdoutPipe()
-						if err != nil {
-							logger.Errorf("Cannot grab stdout pipe: %s\n", err)
-						}
-
-						stderrPipe, err := cmd.StderrPipe()
-						if err != nil {
-							logger.Errorf("Cannot grab stderr pipe: %s\n", err)
-						}
-
-						if err := cmd.Start(); err != nil {
-							logger.Errorf("Cannot start: %s\n", err)
-						}
-
-						_, err = io.ReadAll(stdoutPipe)
-						if err != nil {
-							logger.Errorf("Cannot read stdout: %s\n", err)
-						}
-
-						_, err = io.ReadAll(stderrPipe)
-						if err != nil {
-							logger.Errorf("Cannot read stderr: %s\n", err)
-						}
-
-						if err := cmd.Wait(); err != nil {
-							logger.Errorf("Command failed: %s\n", err)
-							c.JSON(http.StatusUnprocessableEntity, gin.H{
-								"error":   8,
-								"message": "Pipeline associated with resource errored.",
-							})
-							return
-						}
-					}
-
-					c.String(http.StatusOK,
-						fmt.Sprintf("Artifact for product %s processed successfully.", product))
-				})
+				v1.POST(
+					"/upload/:product",
+					server.ValidateToken(app),
+					func(c *gin.Context) {
+						handleArtifactUpload(c.Param("product"), app, c)
+					})
 			}
 
 			port := server.DeterminePort()
