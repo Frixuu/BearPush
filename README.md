@@ -1,6 +1,6 @@
 # bearpush
 
-[![Go Report](https://img.shields.io/badge/go%20report-A-green.svg?style=flat)](https://goreportcard.com/report/github.com/Frixuu/BearPush) ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/Frixuu/BearPush) ![Lines of code](https://img.shields.io/tokei/lines/github/Frixuu/BearPush)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Frixuu/Bearpush/Build) [![Go Report](https://goreportcard.com/badge/github.com/Frixuu/BearPush)](https://goreportcard.com/report/github.com/Frixuu/Bearpush) ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/Frixuu/Bearpush) ![Lines of code](https://img.shields.io/tokei/lines/github/Frixuu/Bearpush)
 
 The poor man's CD pipeline.  
 Bearpush supplies you with a web server, bring your own scripts and auth (optional)
