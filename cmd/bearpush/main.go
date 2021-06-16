@@ -148,15 +148,20 @@ func main() {
 					file, err := c.FormFile("artifact")
 					if err != nil {
 						logger.Warn(err)
-						c.String(http.StatusBadRequest, fmt.Sprintf("Error while uploading: %s", err))
+						c.JSON(http.StatusBadRequest, gin.H{
+							"error":   5,
+							"message": fmt.Sprintf("Error while uploading: %s", err),
+						})
 						return
 					}
 
 					tempDir, err := ioutil.TempDir("", "bearpush-")
 					if err != nil {
 						logger.Error(err)
-						c.String(http.StatusInternalServerError,
-							"Could not create a temporary directory for artifact. Check logs for details.")
+						c.JSON(http.StatusInternalServerError, gin.H{
+							"error":   6,
+							"message": "Could not create a temporary directory for artifact.",
+						})
 						return
 					}
 					defer util.TryRemoveDir(tempDir)
@@ -165,8 +170,10 @@ func main() {
 					err = c.SaveUploadedFile(file, artifactPath)
 					if err != nil {
 						logger.Error("Cannot save artifact: %s", err)
-						c.String(http.StatusInternalServerError,
-							"Could not save the uploaded artifact. Check logs for details.")
+						c.JSON(http.StatusInternalServerError, gin.H{
+							"error":   7,
+							"message": "Could not save the uploaded artifact.",
+						})
 						return
 					}
 
