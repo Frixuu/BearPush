@@ -1,4 +1,4 @@
-module github.com/Frixuu/BearPush
+module github.com/frixuu/bearpush
 
 go 1.16
 

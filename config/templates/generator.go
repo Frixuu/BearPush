@@ -3,7 +3,7 @@ package templates
 import (
 	_ "embed" // For embedding template files
 
-	"github.com/Frixuu/BearPush/util"
+	"github.com/frixuu/bearpush/internal/util"
 )
 
 //go:embed product.yml

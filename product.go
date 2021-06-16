@@ -1,7 +1,6 @@
-package product
+package bearpush
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -23,19 +22,8 @@ type TokenSettings struct {
 	Script   *string       `yaml:"token-script"`
 }
 
-// VerifyToken checks whether a token can be considered valid,
-// according to current strategy.
-func (p *Product) VerifyToken(token string) bool {
-	switch p.TokenSettings.Strategy {
-	case Static:
-		return *p.TokenSettings.Value == token
-	}
-
-	panic(fmt.Sprintf("Token strategy %v is not implemented", p.TokenSettings.Strategy))
-}
-
-// LoadFromFile loads product manifest from a file under a provided path.
-func LoadFromFile(path string) (*Product, error) {
+// LoadProductFromFile loads product manifest from a file under a provided path.
+func LoadProductFromFile(path string) (*Product, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
@@ -50,8 +38,8 @@ func LoadFromFile(path string) (*Product, error) {
 	return &p, nil
 }
 
-// LoadAll parses all available product manifests.
-func LoadAll(basePath string) (map[string]*Product, error) {
+// LoadAllProducts parses all available product manifests.
+func LoadAllProducts(basePath string) (map[string]*Product, error) {
 	m := make(map[string]*Product)
 	dir := filepath.Join(basePath, "products")
 	err := symwalk.Walk(dir, func(path string, info os.FileInfo, err error) error {
@@ -66,7 +54,7 @@ func LoadAll(basePath string) (map[string]*Product, error) {
 		}
 
 		base := name[:len(name)-4]
-		p, err := LoadFromFile(path)
+		p, err := LoadProductFromFile(path)
 		if err != nil {
 			log.Printf("Cannot load product %s: %s\n", base, err)
 			return nil

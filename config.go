@@ -1,4 +1,4 @@
-package config
+package bearpush
 
 import (
 	"fmt"
@@ -15,9 +15,9 @@ type Config struct {
 	Path string
 }
 
-// Load the app configuration.
+// LoadConfig the app configuration.
 // If the config files do not exist on disk, they will be created.
-func Load(dir string) (*Config, error) {
+func LoadConfig(dir string) (*Config, error) {
 	dir, err := filepath.Abs(dir)
 	if err != nil {
 		return nil, fmt.Errorf("cannot determine absolute path for '%s': %w", dir, err)

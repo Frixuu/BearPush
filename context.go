@@ -1,19 +1,14 @@
-package main
-
-import (
-	"github.com/Frixuu/BearPush/config"
-	"github.com/Frixuu/BearPush/product"
-)
+package bearpush
 
 // Context stores current application state.
 type Context struct {
-	Config   *config.Config
-	Products map[string]*product.Product
+	Config   *Config
+	Products map[string]*Product
 }
 
 // ContextFromConfig constructs a Context object from a loaded Config.
-func ContextFromConfig(c *config.Config) (*Context, error) {
-	p, err := product.LoadAll(c.Path)
+func ContextFromConfig(c *Config) (*Context, error) {
+	p, err := LoadAllProducts(c.Path)
 	if err != nil {
 		return nil, err
 	}

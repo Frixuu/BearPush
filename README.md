@@ -12,7 +12,7 @@ Binaries for x86-64 Linux are available from the GitHub Actions.
 ## Build from source
 
 ```sh
-go build .
+go build ./cmd/bearpush/
 ```
 
 ## Usage
