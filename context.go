@@ -1,25 +1,24 @@
-package main
+package bearpush
 
-import (
-	"github.com/Frixuu/BearPush/v2/config"
-	"github.com/Frixuu/BearPush/v2/product"
-)
+import "go.uber.org/zap"
 
 // Context stores current application state.
 type Context struct {
-	Config   *config.Config
-	Products map[string]*product.Product
+	Config   *Config
+	Logger   *zap.SugaredLogger
+	Products map[string]*Product
 }
 
 // ContextFromConfig constructs a Context object from a loaded Config.
-func ContextFromConfig(c config.Config) (*Context, error) {
-	p, err := product.LoadAll(c.Path)
+func ContextFromConfig(c *Config) (*Context, error) {
+	p, err := LoadAllProducts(c.Path)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Context{
-		Config:   &c,
+		Config:   c,
+		Logger:   zap.NewNop().Sugar(),
 		Products: p,
 	}, nil
 }

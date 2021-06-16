@@ -3,5 +3,5 @@
 .vscode/
 
 # Binaries
-bearpush
+/bearpush
 *.exe

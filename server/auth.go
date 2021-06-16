@@ -1,15 +1,16 @@
-package main
+package server
 
 import (
 	"net/http"
 	"strings"
 
+	"github.com/frixuu/bearpush"
 	"github.com/gin-gonic/gin"
 )
 
 // ValidateToken serves as a Gin middleware for checking
 // whether a user can trigger an artifact process.
-func ValidateToken(appCtx *Context) gin.HandlerFunc {
+func ValidateToken(appCtx *bearpush.Context) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.Request.Header["Authorization"]
 		if authHeader == nil || len(authHeader) != 1 {
