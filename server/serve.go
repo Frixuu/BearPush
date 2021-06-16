@@ -7,7 +7,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// Starts makes the server listen to the requests and serve the responses.
+// Start makes the server listen to the requests and serve the responses.
 func Start(srv *http.Server, logger *zap.Logger) {
 	logger.Info("Starting the server now")
 	err := srv.ListenAndServe()
