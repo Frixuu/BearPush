@@ -12,14 +12,14 @@ type Context struct {
 }
 
 // ContextFromConfig constructs a Context object from a loaded Config.
-func ContextFromConfig(c config.Config) (*Context, error) {
+func ContextFromConfig(c *config.Config) (*Context, error) {
 	p, err := product.LoadAll(c.Path)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Context{
-		Config:   &c,
+		Config:   c,
 		Products: p,
 	}, nil
 }

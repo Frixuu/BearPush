@@ -2,11 +2,9 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -21,11 +19,13 @@ import (
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"github.com/urfave/cli/v2"
+	"go.uber.org/zap"
 )
 
 func main() {
 
 	logger := CreateLogger()
+	zap.ReplaceGlobals(logger.Desugar())
 	defer logger.Sync()
 
 	app := &cli.App{
@@ -102,7 +102,7 @@ func main() {
 				return err
 			}
 
-			logger.Infof("Config directory: %s", config.Path)
+			logger.Info("Config directory: %s", config.Path)
 			appContext, err := ContextFromConfig(config)
 			if err != nil {
 				logger.Errorf("Cannot create app context: %s\n", err)
@@ -116,6 +116,7 @@ func main() {
 			gin.SetMode(gin.ReleaseMode)
 			gin.DefaultWriter = io.Discard
 			gin.DefaultErrorWriter = io.Discard
+
 			router := gin.Default()
 			router.MaxMultipartMemory = 8 << 20 // 8 MiB
 
@@ -146,14 +147,14 @@ func main() {
 
 					file, err := c.FormFile("artifact")
 					if err != nil {
-						log.Println(err)
+						logger.Warn(err)
 						c.String(http.StatusBadRequest, fmt.Sprintf("Error while uploading: %s", err))
 						return
 					}
 
 					tempDir, err := ioutil.TempDir("", "bearpush-")
 					if err != nil {
-						log.Println(err)
+						logger.Error(err)
 						c.String(http.StatusInternalServerError,
 							"Could not create a temporary directory for artifact. Check logs for details.")
 						return
@@ -163,7 +164,7 @@ func main() {
 					artifactPath := path.Join(tempDir, "artifact")
 					err = c.SaveUploadedFile(file, artifactPath)
 					if err != nil {
-						log.Printf("Cannot save artifact: %s", err)
+						logger.Error("Cannot save artifact: %s", err)
 						c.String(http.StatusInternalServerError,
 							"Could not save the uploaded artifact. Check logs for details.")
 						return
@@ -214,25 +215,23 @@ func main() {
 				})
 			}
 
-			server := &http.Server{
-				Addr:    server.DeterminePort(),
+			port := server.DeterminePort()
+			logger.Info("The server will bind to ", port)
+
+			srv := &http.Server{
+				Addr:    port,
 				Handler: router,
 			}
 
 			// Listen in a goroutine
-			go func() {
-				err := server.ListenAndServe()
-				if err != nil && errors.Is(err, http.ErrServerClosed) {
-					logger.Info("Server closed")
-				}
-			}()
+			go server.Start(srv, logger.Desugar())
 
 			util.WaitForInterrupt()
 			logger.Info("Shutting down the server")
 			ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 			defer cancel()
 
-			if err := server.Shutdown(ctx); err != nil {
+			if err := srv.Shutdown(ctx); err != nil {
 				logger.Fatal("Server forced to shutdown: ", err)
 			}
 
