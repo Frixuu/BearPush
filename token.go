@@ -56,10 +56,12 @@ func (s *TokenStrategy) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 // VerifyToken checks whether a token can be considered valid,
 // according to current strategy.
-func (p *Product) VerifyToken(token string) bool {
+func (p *Product) VerifyToken(token string, c *Context) (bool, error) {
 	switch p.TokenSettings.Strategy {
 	case StaticToken:
-		return *p.TokenSettings.Value == token
+		return *p.TokenSettings.Value == token, nil
+	case RetrieveToken:
+		return false, nil
 	}
 
 	panic(fmt.Sprintf("Token strategy %v is not implemented", p.TokenSettings.Strategy))

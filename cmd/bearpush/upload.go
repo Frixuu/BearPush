@@ -18,7 +18,7 @@ func handleArtifactUpload(productId string, app *bearpush.Context, c *gin.Contex
 	p, ok := app.Products[productId]
 	if !ok {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error":   4,
+			"error":   101,
 			"message": "Resource does not exist.",
 		})
 		return
@@ -29,7 +29,7 @@ func handleArtifactUpload(productId string, app *bearpush.Context, c *gin.Contex
 	if err != nil {
 		app.Logger.Warn(err)
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error":   5,
+			"error":   102,
 			"message": fmt.Sprintf("Error while uploading: %s", err),
 		})
 		return
@@ -40,7 +40,7 @@ func handleArtifactUpload(productId string, app *bearpush.Context, c *gin.Contex
 	if err != nil {
 		app.Logger.Errorf("Could not create a temporary directory: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error":   6,
+			"error":   103,
 			"message": "Could not create a temporary directory for artifact.",
 		})
 		return
@@ -60,7 +60,7 @@ func handleArtifactUpload(productId string, app *bearpush.Context, c *gin.Contex
 	if err != nil {
 		app.Logger.Errorf("Cannot save artifact: %s", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error":   7,
+			"error":   104,
 			"message": "Could not save the uploaded artifact.",
 		})
 		return
@@ -86,7 +86,7 @@ func handleArtifactUpload(productId string, app *bearpush.Context, c *gin.Contex
 		if err := cmd.Start(); err != nil {
 			app.Logger.Warnf("Cannot start the process: %s", err)
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"error":   8,
+				"error":   105,
 				"message": "Pipeline associated with this resource could not be started.",
 			})
 			return
@@ -105,7 +105,7 @@ func handleArtifactUpload(productId string, app *bearpush.Context, c *gin.Contex
 		if err := cmd.Wait(); err != nil {
 			app.Logger.Warnf("Command failed: %v", err)
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"error":   9,
+				"error":   106,
 				"message": "Pipeline associated with resource errored.",
 			})
 			return

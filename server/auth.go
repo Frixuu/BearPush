@@ -32,9 +32,18 @@ func ValidateToken(appCtx *bearpush.Context) gin.HandlerFunc {
 			return
 		}
 
-		if !p.VerifyToken(token) {
+		auth, err := p.VerifyToken(token, appCtx)
+		if err != nil {
 			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
 				"error":   3,
+				"message": "Processing your request failed. Denying access.",
+			})
+			return
+		}
+
+		if !auth {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
+				"error":   4,
 				"message": "You are not allowed to access one or more requested resources.",
 			})
 			return
