@@ -3,6 +3,7 @@ module github.com/frixuu/bearpush
 go 1.16
 
 require (
+	github.com/ReneKroon/ttlcache/v2 v2.7.0
 	github.com/facebookgo/ensure v0.0.0-20200202191622-63f1cf65ac4c // indirect
 	github.com/facebookgo/stack v0.0.0-20160209184415-751773369052 // indirect
 	github.com/facebookgo/subset v0.0.0-20200203212716-c811ad88dec4 // indirect

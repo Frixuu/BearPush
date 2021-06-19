@@ -3,3 +3,4 @@ token:
   strategy: 'static'
   static-value: '${TOKEN}' # Required for 'static' strategy
   token-script: '' # Required for 'retrieve' and 'verify' strategies
+  cache-in-seconds: 0 # Only for 'retrieve', if set to more than 0 will cache possible tokens

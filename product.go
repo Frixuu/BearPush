@@ -17,9 +17,10 @@ type Product struct {
 
 // TokenSettings describes how a Product validates incoming auth tokens.
 type TokenSettings struct {
-	Strategy TokenStrategy `yaml:"strategy"`
-	Value    *string       `yaml:"static-value"`
-	Script   *string       `yaml:"token-script"`
+	Strategy    TokenStrategy `yaml:"strategy"`
+	Value       *string       `yaml:"static-value"`
+	Script      *string       `yaml:"token-script"`
+	CacheLength int           `yaml:"cache-in-seconds"`
 }
 
 // LoadProductFromFile loads product manifest from a file under a provided path.
@@ -43,6 +44,12 @@ func LoadAllProducts(basePath string) (map[string]*Product, error) {
 	m := make(map[string]*Product)
 	dir := filepath.Join(basePath, "products")
 	err := symwalk.Walk(dir, func(path string, info os.FileInfo, err error) error {
+
+		if err != nil {
+			log.Fatal(err)
+			return nil
+		}
+
 		if info.IsDir() {
 			return nil
 		}
