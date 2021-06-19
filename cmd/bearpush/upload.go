@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
@@ -37,7 +36,7 @@ func handleArtifactUpload(productId string, app *bearpush.Context, c *gin.Contex
 	}
 
 	// Create a temporary directory for storing the uploaded file
-	tempDir, err := ioutil.TempDir("", "bearpush-")
+	tempDir, err := os.MkdirTemp("", "bearpush-")
 	if err != nil {
 		app.Logger.Errorf("Could not create a temporary directory: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
