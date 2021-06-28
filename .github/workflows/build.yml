@@ -5,6 +5,9 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch: [amd64, arm64]
     steps:
     - uses: actions/checkout@v2
     - name: Install Go
@@ -15,9 +18,12 @@ jobs:
       run: 'go get -t .'
     - name: Build application
       run: 'go build -tags=nomsgpack -ldflags="-s -w" -o bearpush ./cmd/bearpush/'
+      env:
+        GOOS: linux
+        GOARCH: ${{ matrix.arch }}
     - name: Upload executable
       uses: actions/upload-artifact@v2
       with:
-        name: Executables
+        name: Executables (${{ matrix.arch }})
         path: "${{ github.workspace }}/bearpush"
         if-no-files-found: error
